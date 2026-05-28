@@ -1,10 +1,9 @@
 """Tasks 2 and 3: Explore and clean the raw DataFrames."""
 
-import logging
 from pathlib import Path
-
 import pandas as pd
-
+import logging
+logger = logging.getLogger(__name__)
 
 def load_and_explore(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Task 2: Load both CSV files and explore their contents before cleaning."""
@@ -13,29 +12,29 @@ def load_and_explore(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     # TODO: Log what you discover (e.g. which columns have nulls, any suspicious values).
     messyS = pd.read_csv(data_dir / "messy_sales.csv")
     messyC = pd.read_csv(data_dir / "messy_customers.csv")
-    print("--- messy sales info ---")
+    logger.info("--- messy sales info ---")
     messyS.info()
-    print()
-    print("--- describe ---")
-    print(messyS.describe())
-    print()
-    print("--- head ---")
-    print(messyS.head(20))
-    print()
-    print("--- missing values ---")
-    print(messyS.isna().sum())
-    print()
-    print("--- messy customers info ---")
+    logger.info()
+    logger.info("--- describe ---")
+    logger.info(messyS.describe())
+    logger.info()
+    logger.info("--- head ---")
+    logger.info(messyS.head(20))
+    logger.info()
+    logger.info("--- missing values ---")
+    logger.info(messyS.isna().sum())
+    logger.info()
+    logger.info("--- messy customers info ---")
     messyC.info()
-    print()
-    print("--- describe ---")
-    print(messyC.describe())
-    print()
-    print("--- head ---")
-    print(messyC.head(20))
-    print()
-    print("--- missing values ---")
-    print(messyC.isna().sum())
+    logger.info()
+    logger.info("--- describe ---")
+    logger.info(messyC.describe())
+    logger.info()
+    logger.info("--- head ---")
+    logger.info(messyC.head(20))
+    logger.info()
+    logger.info("--- missing values ---")
+    logger.info(messyC.isna().sum())
     return messyS, messyC
 
 
