@@ -12,11 +12,12 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 DATA_DIR = Path("data")
 OUTPUT_DIR = Path("output")
 
-# TODO (Task 7): replace with your GitHub username before running the pipeline.
-GITHUB_USERNAME = "<your-github-username>"
+
+GITHUB_USERNAME = "<halyna1995>"
 
 
 def run() -> None:
+    """Run the full pipeline from Task 1 to Task 7."""
     download_inputs(DATA_DIR)
 
     sales_raw, customers_raw = load_and_explore(DATA_DIR)

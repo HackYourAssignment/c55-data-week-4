@@ -11,7 +11,7 @@ Read the full assignment on the HYF Data Track: [Assignment: MessyCorp Pandas](h
 Work through the files in this order:
 
 | Step | File | Tasks |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `src/ingest.py` | Task 1: download inputs from Azure |
 | 2 | `src/clean.py` | Task 2: explore + Task 3: clean sales |
 | 3 | `src/transform.py` | Task 4: join customers, add `is_high_value` |
@@ -44,6 +44,7 @@ Open each file and read the docstrings and TODO comments — they explain exactl
 ```
 
 Files the pipeline generates at runtime (gitignored):
+
 - `data/` — raw CSVs downloaded from Azure in Task 1
 - `output/` — report CSVs, Parquet, and chart written in Task 6
 
@@ -91,7 +92,7 @@ cat .hyf/score.json
 Tasks 2–6 are the core of this assignment and are enough to pass. Tasks 7 and the code quality checks are extra credit.
 
 | Score | What the grader checks |
-|---|---|
+| --- | --- |
 | 14 | Stubs committed: all five function names present, Azure imports, `data/` in `.gitignore` |
 | ~24 | Task 2: `.info()`, `.describe()`, `.isna().sum()`, `.head()` all called |
 | ~44 | Task 3: vectorized string cleaning, `pd.to_numeric`, `pd.to_datetime`, row filters, `drop_duplicates` on `transaction_id` |
