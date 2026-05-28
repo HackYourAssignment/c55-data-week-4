@@ -1,10 +1,7 @@
 """Task 1: Download inputs from Azure. Task 7: Upload outputs back to Azure."""
 
-import io
 import logging
 from pathlib import Path
-
-import pandas as pd
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 
