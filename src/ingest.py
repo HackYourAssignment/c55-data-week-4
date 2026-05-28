@@ -1,4 +1,5 @@
 """Task 1: Download inputs from Azure. Task 7: Upload outputs back to Azure."""
+
 import io
 import logging
 from pathlib import Path
@@ -14,11 +15,31 @@ FILES = ["messy_sales.csv", "messy_customers.csv"]
 
 def download_inputs(data_dir: Path) -> None:
     """Task 1: Download input CSV files from Azure Blob Storage."""
-    # TODO: Create a BlobServiceClient using DefaultAzureCredential and ACCOUNT_URL.
-    # TODO: Get a container client for SOURCE_CONTAINER.
-    # TODO: For each filename in FILES, download the blob and write it to data_dir/<filename>.
-    # TODO: Log a message for each downloaded file.
-    raise NotImplementedError("Task 1: implement download_inputs")
+    print("Initializing Azure credentials...")
+    credential = DefaultAzureCredential()
+    service = BlobServiceClient(account_url=ACCOUNT_URL, credential=credential)
+    container = service.get_container_client(SOURCE_CONTAINER)
+
+    data_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Target directory verified at: {data_dir.resolve()}")
+
+    for name in FILES:
+        print(f"Attempting to download {name}...")
+        blob = container.get_blob_client(name)
+
+        file_path = data_dir / name
+        with open(file_path, "wb") as f:
+            f.write(blob.download_blob().readall())
+
+        logging.info("Downloaded %s to %s", name, file_path)
+        print(f"Successfully downloaded: {name}")
+
+
+if __name__ == "__main__":
+    print("Script started...")
+    target_directory = Path("./data")
+    download_inputs(target_directory)
+    print("Script finished.")
 
 
 def upload_outputs(output_dir: Path, github_username: str) -> None:
