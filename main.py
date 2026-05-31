@@ -12,8 +12,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 DATA_DIR = Path("data")
 OUTPUT_DIR = Path("output")
 
-# TODO (Task 7): replace with your GitHub username before running the pipeline.
-GITHUB_USERNAME = "<your-github-username>"
+GITHUB_USERNAME = "pavel-tisner"
 
 
 def run() -> None:
@@ -26,7 +25,7 @@ def run() -> None:
 
     reports = build_reports(enriched)
     write_outputs(reports, OUTPUT_DIR)
-
+    
     upload_outputs(OUTPUT_DIR, GITHUB_USERNAME)
 
     logging.info("Pipeline complete.")
