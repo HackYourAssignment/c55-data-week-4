@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Week 4 autograder — MessyCorp Pandas pipeline
+# Static checks + behavioural functional tests.
 # Runs from the .hyf/ directory; the project root is one level up.
 set -euo pipefail
 
@@ -25,64 +26,55 @@ code_grep "\.isna()\.sum()" "$CLEAN" && L1=$((L1+1)) || true
 code_grep "\.head("         "$CLEAN" && L1=$((L1+1)) || true
 [ "$L1" -eq 4 ] && add 10
 
-# ── Level 2 (20 pts): vectorized cleaning ────────────────────────────────────
+# ── Level 2 (14 pts): vectorized cleaning ────────────────────────────────────
+# Trimmed: price/quantity filter greps and 2 pts from drop_duplicates moved to
+# Level 9 (functional tests), because static greps cannot tell apart a real
+# boolean filter from an unrelated reference to those columns.
 code_grep "str\.strip"                      "$CLEAN" && add 2 || true
 code_grep "str\.title"                      "$CLEAN" && add 1 || true
 code_grep "str\.lower"                      "$CLEAN" && add 1 || true
 code_grep "pd\.to_numeric"                  "$CLEAN" && add 3 || true
 code_grep "pd\.to_datetime"                 "$CLEAN" && add 3 || true
-# Targeted boolean row-drops (price/quantity filters, not bare dropna)
-code_grep "\[.*price\b"                     "$CLEAN" && add 2 || true
-code_grep "\[.*quantity\b"                  "$CLEAN" && add 2 || true
-# Deduplication on transaction_id with keep="first"
 code_grep "drop_duplicates"                 "$CLEAN" && \
   code_grep "transaction_id"               "$CLEAN" && \
-  code_grep "keep.*=.*['\"]first['\"]"     "$CLEAN" && add 6 || true
+  code_grep "keep.*=.*['\"]first['\"]"     "$CLEAN" && add 4 || true
 
-# ── Level 3 (15 pts): customer join ──────────────────────────────────────────
+# ── Level 3 (10 pts): customer join ──────────────────────────────────────────
+# Trimmed: inner-join semantics and is_high_value behaviour moved to Level 9.
+# Static checks here only verify that the relevant idioms appear in the file.
 TRANSFORM="$ROOT/src/transform.py"
 code_grep "str\.lower"                      "$TRANSFORM" && add 2 || true
 code_grep "str\.strip"                      "$TRANSFORM" && add 2 || true
-code_grep "how.*=.*['\"]inner['\"]"         "$TRANSFORM" && add 5 || true
-# Vectorized is_high_value — boolean expression, no row-level loop
+code_grep "how.*=.*['\"]inner['\"]"         "$TRANSFORM" && add 2 || true
 code_grep "is_high_value"                   "$TRANSFORM" && \
-  ! grep -q "iterrows\|for.*row\b"          "$TRANSFORM" && add 6 || true
+  ! grep -q "iterrows\|for.*row\b"          "$TRANSFORM" && add 4 || true
 
 # ── Level 4 (20 pts): named aggregations ─────────────────────────────────────
 REPORT="$ROOT/src/report.py"
-# Named agg: keyword=("col", "func") style
 code_grep "total_revenue[[:space:]]*="      "$REPORT" && add 5 || true
 code_grep "order_count[[:space:]]*="        "$REPORT" && add 5 || true
 code_grep "isocalendar"                     "$REPORT" && \
   code_grep "\.week"                        "$REPORT" && add 5 || true
-# ("customer_name", "first") pattern
 code_grep "customer_name.*first\|\"first\"" "$REPORT" && add 5 || true
 
 # ── Level 5 (10 pts): file outputs ───────────────────────────────────────────
 code_grep "weekly_revenue\.csv"             "$REPORT" && add 2 || true
 code_grep "customer_summary\.parquet"       "$REPORT" && add 3 || true
 code_grep "category_performance\.csv"       "$REPORT" && add 2 || true
-# index=False on writes
 code_grep "index=False"                     "$REPORT" && add 1 || true
 code_grep "savefig"                         "$REPORT" && add 2 || true
 
-# ── Level 6 (15 pts): Azure round-trip ───────────────────────────────────────
+# ── Level 6 (10 pts): Azure round-trip ───────────────────────────────────────
+# Trimmed: the row-count assert check moved to Level 9. Functional tests now
+# verify that all FILES are actually written under the data_dir argument.
 INGEST="$ROOT/src/ingest.py"
 code_grep "DefaultAzureCredential"          "$INGEST" && add 3 || true
 code_grep "BlobServiceClient"               "$INGEST" && add 2 || true
-# data/ must be in .gitignore (exact path entry)
 grep -q "^data/" "$ROOT/.gitignore"                   && add 5 || true
-# Read-back assertion with row count comparison
-code_grep "assert"                          "$INGEST" && \
-  code_grep "len("                          "$INGEST" && add 5 || true
 
 # ── Level 7 (10 pts): code quality ───────────────────────────────────────────
-# pathlib.Path constructor used in src/ (not just type hints)
 grep -rq "Path(" "$ROOT/src/"                         && add 3 || true
-# logging.X() calls present, no bare print() calls
 grep -rq "logging\.\(info\|warning\|error\|debug\)" "$ROOT/src/" && add 3 || true
-! grep -rq "^[[:space:]]*print(" "$ROOT/src/"         && add 0 || true  # advisory only
-# All five required function names present
 grep -q "def download_inputs"  "$INGEST"  && \
   grep -q "def upload_outputs" "$INGEST"  && \
   grep -q "def clean_sales"    "$CLEAN"   && \
@@ -95,7 +87,30 @@ if [ -f "$ROOT/AI_ASSIST.md" ] && [ "$(wc -l < "$ROOT/AI_ASSIST.md")" -gt 5 ]; t
   AI_ASSIST_EXISTS=true
 fi
 
-# ── Result ────────────────────────────────────────────────────────────────────
+# ── Level 9 (16 pts): behavioural correctness ────────────────────────────────
+# 8 functional tests × 2 pts each. These import the student's code and run
+# synthetic inputs through it to catch bugs static greps cannot detect:
+# dropna() vs boolean filter, indentation bugs, hardcoded paths, etc.
+L9=0
+FUNCTIONAL_RESULT="not run"
+if command -v python3 >/dev/null 2>&1 && [ -f "$ROOT/.hyf/functional_tests.py" ]; then
+  # Install minimal deps quietly. Azure SDKs are required because
+  # src/ingest.py imports them at module-load time.
+  python3 -m pip install --quiet --disable-pip-version-check \
+    pandas pytest azure-storage-blob azure-identity >/dev/null 2>&1 || true
+
+  pytest_output=$(cd "$ROOT" && python3 -m pytest .hyf/functional_tests.py --no-header -q 2>&1 || true)
+  passed=$(echo "$pytest_output" | grep -oE "[0-9]+ passed" | tail -1 | grep -oE "[0-9]+" || echo 0)
+  failed=$(echo "$pytest_output" | grep -oE "[0-9]+ failed" | tail -1 | grep -oE "[0-9]+" || echo 0)
+  errors=$(echo "$pytest_output" | grep -oE "[0-9]+ error" | tail -1 | grep -oE "[0-9]+" || echo 0)
+  : "${passed:=0}"; : "${failed:=0}"; : "${errors:=0}"
+  L9=$((passed * 2))
+  if [ "$L9" -gt 16 ]; then L9=16; fi
+  FUNCTIONAL_RESULT="${passed} passed, ${failed} failed, ${errors} errors"
+fi
+add "$L9"
+
+# ── Result ───────────────────────────────────────────────────────────────────
 [ "$SCORE" -ge "$PASSING_SCORE" ] && PASS=true || true
 
 cat << EOF > score.json
@@ -103,6 +118,7 @@ cat << EOF > score.json
   "score": $SCORE,
   "pass": $PASS,
   "passingScore": $PASSING_SCORE,
-  "ai_assist_present": $AI_ASSIST_EXISTS
+  "ai_assist_present": $AI_ASSIST_EXISTS,
+  "functional_tests": "$FUNCTIONAL_RESULT"
 }
 EOF
