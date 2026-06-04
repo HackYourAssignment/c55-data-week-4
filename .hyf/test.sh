@@ -122,3 +122,19 @@ cat << EOF > score.json
   "functional_tests": "$FUNCTIONAL_RESULT"
 }
 EOF
+
+# ── Human-readable summary (captured into test-output.txt by CI) ─────────────
+PASS_ICON="❌"; [ "$PASS" = "true" ] && PASS_ICON="✅"
+echo "Week 4 autograder — MessyCorp Pandas pipeline"
+echo "=============================================="
+echo ""
+echo "Behavioural tests (L9): $L9 / 16  ($FUNCTIONAL_RESULT)"
+echo "Static checks (L1-L7):  $((SCORE - L9)) / 84"
+echo "AI_ASSIST.md present:   $AI_ASSIST_EXISTS"
+echo ""
+echo "Total: $SCORE / 100  $PASS_ICON  (passing score: $PASSING_SCORE)"
+if [ -n "${pytest_output:-}" ] && [ "$L9" -lt 16 ]; then
+  echo ""
+  echo "Functional test output:"
+  echo "$pytest_output"
+fi
