@@ -124,7 +124,7 @@ cat << EOF > score.json
 EOF
 
 # ── Human-readable summary (captured into test-output.txt by CI) ─────────────
-PASS_ICON="❌"; [ "$PASS" = "true" ] && PASS_ICON="✅"
+PASS_ICON="❌"; [ "$PASS" = "true" ] && PASS_ICON="✅" || true
 echo "Week 4 autograder — MessyCorp Pandas pipeline"
 echo "=============================================="
 echo ""
