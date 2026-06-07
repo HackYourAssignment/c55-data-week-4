@@ -15,10 +15,21 @@ FILES = ["messy_sales.csv", "messy_customers.csv"]
 def download_inputs(data_dir: Path) -> None:
     """Task 1: Download input CSV files from Azure Blob Storage."""
     # TODO: Create a BlobServiceClient using DefaultAzureCredential and ACCOUNT_URL.
+    credential = DefaultAzureCredential()
+    blob_service_client = BlobServiceClient(account_url=ACCOUNT_URL, credential=credential) 
     # TODO: Get a container client for SOURCE_CONTAINER.
+    container_client = blob_service_client.get_container_client(SOURCE_CONTAINER)
     # TODO: For each filename in FILES, download the blob and write it to data_dir/<filename>.
+    for filename in FILES:
+       Path("data").mkdir(exist_ok=True)
+    for name in FILES:
+       blob = container_client.get_blob_client(name)
+    with open(f"data/{name}", "wb") as f:
+        f.write(blob.download_blob().readall())
+
     # TODO: Log a message for each downloaded file.
-    raise NotImplementedError("Task 1: implement download_inputs")
+    for filename in FILES:
+     logging.info("Downloaded %s", name)
 
 
 def upload_outputs(output_dir: Path, github_username: str) -> None:
@@ -31,4 +42,4 @@ def upload_outputs(output_dir: Path, github_username: str) -> None:
     # TODO: Upload every .parquet file in output_dir to the container.
     # TODO: Download customer_summary.parquet back and assert its row count matches the local file.
     # TODO: Log the container name and number of files uploaded.
-    raise NotImplementedError("Task 7: implement upload_outputs")
+    

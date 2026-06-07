@@ -13,7 +13,7 @@ DATA_DIR = Path("data")
 OUTPUT_DIR = Path("output")
 
 # TODO (Task 7): replace with your GitHub username before running the pipeline.
-GITHUB_USERNAME = "<your-github-username>"
+GITHUB_USERNAME = "hannahwn"
 
 
 def run() -> None:
