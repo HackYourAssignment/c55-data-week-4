@@ -13,11 +13,12 @@ DATA_DIR = Path("data")
 OUTPUT_DIR = Path("output")
 
 # TODO (Task 7): replace with your GitHub username before running the pipeline.
-GITHUB_USERNAME = "<your-github-username>"
+GITHUB_USERNAME = "mareh-aboghanem"
 
 
 def run() -> None:
-    download_inputs(DATA_DIR)
+    # it works once then i commented out the download and upload functions to avoid unnecessary Azure interactions during development.
+    #download_inputs(DATA_DIR)
 
     sales_raw, customers_raw = load_and_explore(DATA_DIR)
 
@@ -27,7 +28,7 @@ def run() -> None:
     reports = build_reports(enriched)
     write_outputs(reports, OUTPUT_DIR)
 
-    upload_outputs(OUTPUT_DIR, GITHUB_USERNAME)
+    #upload_outputs(OUTPUT_DIR, GITHUB_USERNAME)
 
     logging.info("Pipeline complete.")
 
